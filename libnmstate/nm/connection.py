@@ -183,7 +183,9 @@ class ConnectionProfile:
                     act_object,
                     e,
                 )
-            elif self._is_connection_unavailable(e):
+            elif self._is_connection_unavailable(
+                e
+            ) or self._has_no_connection_available(e):
                 logging.warning(
                     "Connection unavailable on %s %s, retrying",
                     act_type,
@@ -234,6 +236,15 @@ class ConnectionProfile:
             and err.domain == "nm-manager-error-quark"
             and err.code == 2
             and "is not available on the device" in err.message
+        )
+
+    @staticmethod
+    def _has_no_connection_available(err):
+        return (
+            isinstance(err, nmclient.GLib.GError)
+            and err.domain == "nm-manager-error-quark"
+            and err.code == 2
+            and "has no connections available for activation" in err.message
         )
 
     def _get_activation_metadata(self):
