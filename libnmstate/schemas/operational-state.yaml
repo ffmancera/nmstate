@@ -399,6 +399,11 @@ definitions:
           type: string
           enum:
           - ovs-interface
+        patch:
+          type: object
+          properties:
+            peer:
+              type: string
   interface-dummy:
     rw:
       properties:

@@ -31,6 +31,7 @@ from libnmstate.schema import InterfaceState
 from libnmstate.schema import InterfaceType
 from libnmstate.schema import LinuxBridge as LB
 from libnmstate.schema import OVSBridge
+from libnmstate.schema import OVSInterface
 from libnmstate.schema import Route
 from libnmstate.schema import RouteRule
 from libnmstate.schema import Team
@@ -747,3 +748,27 @@ def generate_vlan_id_range_config(min_vlan_id, max_vlan_id):
             LB.Port.Vlan.TrunkTags.MAX_RANGE: max_vlan_id,
         }
     }
+
+
+class TestOVSInterface:
+    def test_valid_ovs_interface_with_peer(self, default_data):
+        ovs_patch = {OVSInterface.Patch.PEER: "192.0.2.1"}
+        default_data[Interface.KEY].append(
+            {
+                Interface.NAME: "ovs0",
+                Interface.TYPE: InterfaceType.OVS_INTERFACE,
+                OVSInterface.CONFIG_SUBTREE: ovs_patch,
+            }
+        )
+
+        libnmstate.validator.schema_validate(default_data)
+
+    def test_valid_ovs_interface_without_peer(self, default_data):
+        default_data[Interface.KEY].append(
+            {
+                Interface.NAME: "ovs0",
+                Interface.TYPE: InterfaceType.OVS_INTERFACE,
+            }
+        )
+
+        libnmstate.validator.schema_validate(default_data)

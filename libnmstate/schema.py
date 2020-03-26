@@ -284,6 +284,15 @@ class OVSBridge(Bridge):
                 LACP = "lacp"
 
 
+class OVSInterface:
+    TYPE = InterfaceType.OVS_INTERFACE
+
+    CONFIG_SUBTREE = "patch"
+
+    class Patch:
+        PEER = "peer"
+
+
 class Team:
     TYPE = InterfaceType.TEAM
     CONFIG_SUBTREE = InterfaceType.TEAM
