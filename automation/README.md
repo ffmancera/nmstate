@@ -7,7 +7,7 @@ It may be used both locally and through CI.
   directory. The images are published on docker hub:
   https://hub.docker.com/r/nmstate/
 
-- run-tests.sh: Execute the tests in a container using
+- run-tests-container.sh: Execute the tests in a container using
   'nmstate/fedora-nmstate-dev' container image.
 
   The following steps are executed:
@@ -21,17 +21,17 @@ It may be used both locally and through CI.
 
 ## Running the Tests
 Assuming *podman* is installed on the host, just run:
-`./automation/run-tests.sh`
+`./automation/run-tests-container.sh`
 
-By default, `./automation/run-tests.sh` will run all tests in the container
+By default, `./automation/run-tests-container.sh` will run all tests in the container
 using 'nmstate/fedora-nmstate-dev' container image.
 You may change the test type by specifying the `--test-type` flag, for example:
 
- * `./automation/run-tests.sh --test-type integ --el8`:
+ * `./automation/run-tests-container.sh --test-type integ --el8`:
    Integration tests (without slow test cases) using
    'nmstate/centos8-nmstate-dev' container image.
 
- * `./automation/run-tests.sh --test-type integ`:
+ * `./automation/run-tests-container.sh --test-type integ`:
    Integration tests (without slow test cases) using
    'nmstate/fedora-nmstate-dev' container image.
 
@@ -39,7 +39,7 @@ You may change the test type by specifying the `--test-type` flag, for example:
    Integration slow test cases using `nmstate/fedora-nmstate-dev` container
    image.
 
-For a full list of command-line flags, run `./automation/run-tests.sh --help`.
+For a full list of command-line flags, run `./automation/run-tests-container.sh --help`.
 
 ## Development
 
@@ -49,7 +49,7 @@ order to run the tests. Setting the environment variable `debug_exit_shell`
 will make the script start a shell instead of exiting the script after an error
 or running the scripts:
 
-`debug_exit_shell=1 ./automation/run-tests.sh`
+`debug_exit_shell=1 ./automation/run-tests-container.sh`
 
 After closing the shell, the container will be removed. Alternatively it is
 possible to provide the `--debug-shell` command-line option.
@@ -57,17 +57,17 @@ possible to provide the `--debug-shell` command-line option.
 To specify a different container image for the tests, specify it with the
 `CONTAINER_IMAGE` variable:
 
-`CONTAINER_IMAGE=local/centos8-nmstate-dev debug_exit_shell=1 ./automation/run-tests.sh`
+`CONTAINER_IMAGE=local/centos8-nmstate-dev debug_exit_shell=1 ./automation/run-tests-container.sh`
 
 It is also possible to pass extra arguments to PDB using the
 `nmstate_pytest_extra_args` variable or via `--pytest-args` command-line
 option, for example:
 
-`nmstate_pytest_extra_args="--pdb -x" ./automation/run-tests.sh`
+`nmstate_pytest_extra_args="--pdb -x" ./automation/run-tests-container.sh`
 
 or:
 
-`./automation/run-tests.sh --pytest-args "--pdb -x"`
+`./automation/run-tests-container.sh --pytest-args "--pdb -x"`
 
 ### Build a new container image
 
