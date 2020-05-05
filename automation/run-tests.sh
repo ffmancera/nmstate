@@ -35,6 +35,7 @@ NMSTATE_TEMPDIR=$(mktemp -d /tmp/nmstate-test-XXXX)
 : ${CONTAINER_CMD:=podman}
 
 source automation/tests-container-utils.sh
+source automation/tests-baremetal-utils.sh
 
 test -t 1 && USE_TTY="-t"
 
@@ -77,12 +78,22 @@ function install_nmstate {
 function run_tests {
     if [ $TEST_TYPE == $TEST_TYPE_ALL ] || \
        [ $TEST_TYPE == $TEST_TYPE_FORMAT ];then
-        exec_cmd "tox -e black"
+        if [ -z I{$RUN_BAREMETAL+x} ];then
+            exec_cmd "tox -e black"
+        else
+            echo "Running formatter in baremetal is not " \
+                 "supported yet"
+        fi
     fi
 
     if [ $TEST_TYPE == $TEST_TYPE_ALL ] || \
        [ $TEST_TYPE == $TEST_TYPE_LINT ];then
-        exec_cmd "tox -e flake8,pylint"
+        if [ -z I{$RUN_BAREMETAL+x} ];then
+            exec_cmd "tox -e flake8,pylint"
+        else
+            echo "Running linter in baremetal is not " \
+                 "supported yet"
+        fi
     fi
 
     if [ $TEST_TYPE == $TEST_TYPE_ALL ] || \
@@ -94,7 +105,12 @@ function run_tests {
             exec_cmd 'env VIRTUALENV_NO_DOWNLOAD=1 \
                             tox --sitepackages -e py36'
         else
-            exec_cmd 'tox -e py36'
+            if [ -z I{$RUN_BAREMETAL+x} ];then
+                exec_cmd "tox -e py36"
+            else
+                echo "Running unit test in baremetal is not " \
+                     "supported yet"
+            fi
         fi
     fi
 
@@ -104,7 +120,12 @@ function run_tests {
             echo "Running unit test in $CONTAINER_IMAGE container is not " \
                  "support yet"
         else
-            exec_cmd 'tox -e py38'
+            if [ -z I{$RUN_BAREMETAL+x} ];then
+                exec_cmd "tox -e py38"
+            else
+                echo "Running unit test in baremetal is not " \
+                     "supported yet"
+            fi
         fi
     fi
 
@@ -179,7 +200,7 @@ function run_exit {
         remove_container
         remove_tempdir
     else
-        teardown_baremetal_netenv
+        teardown_baremetal_networkenv
     fi
 }
 
@@ -240,7 +261,7 @@ while true; do
     --install-dependencies)
         INSTALL_DEPS="true"
         ;;
-        --use-installed-nmstate)
+    --use-installed-nmstate)
         INSTALL_NMSTATE="false"
         ;;
     --help)
@@ -273,16 +294,26 @@ done
 : ${TEST_TYPE:=$TEST_TYPE_ALL}
 : ${CONTAINER_IMAGE:=$FEDORA_IMAGE_DEV}
 : ${INSTALL_NMSTATE:="true"}
+: ${INSTALL_DEPS:="false"}
 modprobe_ovs
 
 if [ -z ${RUN_BAREMETAL+x} ];then
     prepare_container_environment
+else
+    CONTAINER_WORKSPACE="."
+    if [ ${INSTALL_DEPS} == "true" ];then
+        install_baremetal_dependencies
+    fi
+        start_baremetal_services
 fi
 
 check_services
 
 if [ -z ${RUN_BAREMETAL+x} ];then
     container_add_extra_networks
+else
+    trap 'run_exit' ERR EXIT
+    prepare_baremetal_network
 fi
 
 exec_cmd '(source /etc/os-release; echo $PRETTY_NAME); rpm -q NetworkManager'
