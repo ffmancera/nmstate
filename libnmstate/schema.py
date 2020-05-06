@@ -299,3 +299,54 @@ class Team:
 
         class RunnerMode:
             LOAD_BALANCE = "loadbalance"
+
+
+class LLDP:
+    CONFIG_SUBTREE = "lldp"
+    ENABLED = "enabled"
+    NEIGHBORS_SUBTREE = "neighbors"
+
+    class Neighbors:
+        SYSTEM_CAPABILITY_OTHER = "other"
+        SYSTEM_CAPABILITY_REPEATER = "repeater"
+        SYSTEM_CAPABILITY_MAC_BRIDGE = "mac-bridge"
+        SYSTEM_CAPABILITY_WLAN_AC = "wlan-access-point"
+        SYSTEM_CAPABILITY_ROUTER = "router"
+        SYSTEM_CAPABILITY_TELEPHONE = "telephone"
+        SYSTEM_CAPABILITY_DOCSIS = "docsis"
+        SYSTEM_CAPABILITY_STATION = "station-only"
+        SYSTEM_CAPABILITY_CVLAN = "c-vlan"
+        SYSTEM_CAPABILITY_SVLAN = "s-vlan"
+        SYSTEM_CAPABILITY_TPMR = "tpmr"
+
+        CHASSIS_SUBTREE = "chassis"
+
+        class Chassis:
+            TYPE_RESERVED = "reserved"
+            TYPE_COMPONENT = "component"
+            TYPE_INTERFACE_ALIAS = "interface-alias"
+            TYPE_PORT = "port"
+            TYPE_MAC = "mac"
+            TYPE_NETWORK_ADDRESS = "network-address"
+            TYPE_INTERFACE_NAME = "interface-name"
+            TYPE_LOCAL = "local"
+            TYPE_UNKNOWN = "unknown"
+
+        PORT_SUBTREE = "port"
+
+        class Port:
+            TYPE_RESERVED = "reserved"
+            TYPE_INTERFACE_ALIAS = "interface-alias"
+            TYPE_COMPONENT = "component"
+            TYPE_MAC = "mac"
+            TYPE_NETWORK_ADDRESS = "network-address"
+            TYPE_INTERFACE_NAME = "interface-name"
+            TYPE_AGENT_CIRCUIT = "agent-circuit"
+            TYPE_LOCAL = "local"
+            TYPE_UNKNOWN = "unknown"
+
+        VLAN_SUBTREE = "vlan"
+        MAC_PHY_SUBTREE = "mac-phy"
+        PORT_VLAN_SUBTREE = "port-vlan"
+        MANAGEMENT_ADDRESSES_SUBTREE = "management-addresses"
+        BRIDGE_SUBTREE = "bridge"
