@@ -76,11 +76,28 @@ def apply_changes(context, net_state):
         if nmdev:
             cur_con_profile = connection.ConnectionProfile(context)
             cur_con_profile.import_by_device(nmdev)
+        else:
+            # Profile for virtual interface will remove interface when down
+            # hence search on existing NM.RemoteConnections
+            con_profile = context.client.get_connection_by_id(ifname)
+            if con_profile and con_profile.get_interface_name() == ifname:
+                cur_con_profile = connection.ConnectionProfile(
+                    context, profile=con_profile
+                )
         original_desired_iface_state = {}
         if net_state.ifaces.get(ifname):
             original_desired_iface_state = net_state.ifaces[
                 ifname
             ].original_dict
+            if (
+                set(original_desired_iface_state.keys())
+                <= set([Interface.STATE, Interface.NAME, Interface.TYPE])
+                and cur_con_profile
+            ):
+                # Don't create new profile if original desire does not ask
+                # anything besides state:up
+                con_profiles.append(cur_con_profile)
+                continue
         new_con_profile = _build_connection_profile(
             context,
             iface_desired_state,
@@ -135,6 +152,7 @@ def _set_ifaces_admin_state(context, ifaces_desired_state, con_profiles):
     new_master_not_enslaved_ifaces = set()
     master_ifaces_to_edit = set()
     ifaces_to_edit = set()
+    devs_to_deactivate = {}
     devs_to_delete_profile = {}
     devs_to_delete = {}
     devs_to_deactivate_beforehand = []
@@ -198,12 +216,21 @@ def _set_ifaces_admin_state(context, ifaces_desired_state, con_profiles):
                 InterfaceState.ABSENT,
             ):
                 nmdevs = _get_affected_devices(context, iface_desired_state)
+                is_absent = (
+                    iface_desired_state[Interface.STATE]
+                    == InterfaceState.ABSENT
+                )
                 for affected_nmdev in nmdevs:
-                    devs_to_delete_profile[
+                    devs_to_deactivate[
                         affected_nmdev.get_iface()
                     ] = affected_nmdev
+                    if is_absent:
+                        devs_to_delete_profile[
+                            affected_nmdev.get_iface()
+                        ] = affected_nmdev
                 if (
-                    nmdev.is_software()
+                    is_absent
+                    and nmdev.is_software()
                     and nmdev.get_device_type() != NM.DeviceType.VETH
                 ):
                     devs_to_delete[nmdev.get_iface()] = nmdev
@@ -255,7 +282,7 @@ def _set_ifaces_admin_state(context, ifaces_desired_state, con_profiles):
         device.activate(context, dev=None, connection_id=ifname)
     context.wait_all_finish()
 
-    for dev in devs_to_delete_profile.values():
+    for dev in devs_to_deactivate.values():
         device.deactivate(context, dev)
     context.wait_all_finish()
 
