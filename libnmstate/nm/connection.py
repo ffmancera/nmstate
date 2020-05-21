@@ -222,7 +222,7 @@ class ConnectionProfile:
             elif self._is_activating():
                 self._wait_ac_activation(action)
                 if self._nm_dev:
-                    self._wait_dev_activation(action)
+                    self.wait_dev_activation(action)
             else:
                 if self._nm_dev:
                     error_msg = (
@@ -257,8 +257,10 @@ class ConnectionProfile:
             )
         )
 
-    def _wait_dev_activation(self, action):
+    def wait_dev_activation(self, action):
+        print("WAIT_DEV IN")
         if self._nm_dev:
+            print("NM_DEV IS FINE")
             self._dev_handlers.add(
                 self._nm_dev.connect(
                     "state-changed", self._dev_state_change_callback, action
@@ -269,8 +271,10 @@ class ConnectionProfile:
         self, _dev, _new_state, _old_state, _reason, action,
     ):
         if self._ctx.is_cancelled():
+            print("OHNO is cancelled")
             self._activation_clean_up()
             return
+        print("ACTIVATION PROGRESS CHECK")
         self._activation_progress_check(action)
 
     def _ac_state_flags_change_callback(self, _nm_act_con, _state, action):
@@ -286,19 +290,23 @@ class ConnectionProfile:
         self._activation_progress_check(action)
 
     def _activation_progress_check(self, action):
+        print("ACTIVATION PROGRESS CHECK IN")
         if self._ctx.is_cancelled():
+            print("OHNOOO")
             self._activation_clean_up()
             return
         devname = self.profile.get_id()
         cur_nm_dev = self._ctx.get_nm_dev(devname)
         if cur_nm_dev and cur_nm_dev != self._nm_dev:
+            print("WATTTTTT")
             logging.debug(f"The NM.Device of profile {devname} changed")
             self._remove_dev_handlers()
             self._nm_dev = cur_nm_dev
-            self._wait_dev_activation(action)
+            self.wait_dev_activation(action)
 
         cur_nm_ac = get_device_active_connection(self.nmdevice)
         if cur_nm_ac and cur_nm_ac != self._nm_ac:
+            print("WAT V2")
             logging.debug(
                 "Active connection of device {} has been replaced".format(
                     self.devname
@@ -316,9 +324,11 @@ class ConnectionProfile:
                 self._nm_dev.get_state(),
                 self._nm_ac.get_state_flags(),
             )
+            print("ACTIVATED!!!!!!")
             self._activation_clean_up()
             self._ctx.finish_async(action)
         elif not self._is_activating():
+            print("oooooppps")
             reason = self._nm_ac.get_state_reason()
             if self.nmdevice:
                 reason += "f{self.nmdevice.get_state_reason()}"
@@ -326,6 +336,7 @@ class ConnectionProfile:
             self._ctx.fail(
                 NmstateLibnmError(f"{action} failed: reason={reason}")
             )
+        print("NOTHING!! WHYYYYYYYYY")
 
     def _activation_clean_up(self):
         self._remove_ac_handlers()
