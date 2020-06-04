@@ -205,6 +205,13 @@ class Ifaces:
         return self._cur_ifaces
 
     @property
+    def current_state(self):
+        return {
+            ifname: iface.to_dict()
+            for ifname, iface in self.cur_ifaces.items()
+        }
+
+    @property
     def state_to_edit(self):
         return [
             iface.to_dict()

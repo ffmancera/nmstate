@@ -64,6 +64,7 @@ def apply_changes(context, net_state):
     ifaces_desired_state.extend(
         _create_proxy_ifaces_desired_state(ifaces_desired_state)
     )
+    ifaces_current_state = net_state.ifaces.current_state
 
     for iface_desired_state in filter(
         lambda s: s.get(Interface.STATE)
@@ -93,9 +94,12 @@ def apply_changes(context, net_state):
                 set(original_desired_iface_state.keys())
                 <= set([Interface.STATE, Interface.NAME, Interface.TYPE])
                 and cur_con_profile
+                and ifaces_current_state.get(ifname, {}).get(Interface.STATE)
+                != InterfaceState.DOWN
             ):
                 # Don't create new profile if original desire does not ask
-                # anything besides state:up
+                # anything besides state:up and it was up in the current
+                # state
                 con_profiles.append(cur_con_profile)
                 continue
         new_con_profile = _build_connection_profile(
