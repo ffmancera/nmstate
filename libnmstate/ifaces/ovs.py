@@ -23,6 +23,7 @@ import subprocess
 
 from libnmstate.error import NmstateValueError
 from libnmstate.schema import OVSBridge
+from libnmstate.schema import OVSInterface
 from libnmstate.schema import Interface
 from libnmstate.schema import InterfaceType
 from libnmstate.schema import InterfaceState
@@ -163,6 +164,7 @@ class OvsInternalIface(BaseIface):
     def __init__(self, info):
         super().__init__(info)
         self._parent = None
+        self._config = info.get(OVSInterface.CONFIG_SUBTREE)
 
     @property
     def is_virtual(self):
@@ -183,6 +185,29 @@ class OvsInternalIface(BaseIface):
     @property
     def need_parent(self):
         return True
+
+    @property
+    def is_patch_port(self):
+        if self._config:
+            return True
+        else:
+            return False
+
+    def pre_edit_validation_and_cleanup(self):
+        super().pre_edit_validation_and_cleanup()
+        self._validate_ovs_interface_patch()
+
+    def _validate_ovs_interface_patch(self):
+        if self.is_patch_port and (
+            super().is_ipv4_enabled()
+            or super().is_ipv6_enabled()
+            or super().mtu
+            or super().mac
+        ):
+            raise NmstateValueError(
+                "OVS Patch interface state cannot contain MAC address, MTU"
+                " or IP configuration."
+            )
 
 
 def is_ovs_running():

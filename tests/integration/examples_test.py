@@ -163,3 +163,12 @@ def test_port_vlan(eth1_up):
         assertlib.assert_state(desired_state)
 
     assertlib.assert_absent("linux-br0")
+
+
+def test_add_ovs_patch_and_remove():
+    with example_state(
+        "ovsbridge_patch_create.yml", cleanup="ovsbridge_patch_delete.yml"
+    ) as desired_state:
+        assertlib.assert_state(desired_state)
+
+    assertlib.assert_absent("patch0")

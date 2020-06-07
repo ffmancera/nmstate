@@ -28,6 +28,7 @@ from libnmstate.schema import InterfaceIPv4
 from libnmstate.schema import InterfaceState
 from libnmstate.schema import InterfaceType
 from libnmstate.schema import OVSBridge
+from libnmstate.schema import OVSInterface
 from libnmstate.error import NmstateDependencyError
 from libnmstate.error import NmstateValueError
 
@@ -45,6 +46,7 @@ from .testlib.vlan import vlan_interface
 BOND1 = "bond1"
 BRIDGE1 = "br1"
 PORT1 = "ovs1"
+PATCH1 = "patch1"
 VLAN_IFNAME = "eth101"
 
 MAC1 = "02:FF:FF:FF:FF:01"
@@ -306,3 +308,28 @@ def test_add_invalid_slave_ip_config(eth1_up):
         with bridge.create() as state:
             desired_state[Interface.KEY].append(state[Interface.KEY][0])
             libnmstate.apply(desired_state)
+
+
+class TestOvsPatch:
+    def test_create_and_remove_patch_port(self):
+        patch_state = {OVSInterface.Patch.PEER: "192.0.2.1"}
+        bridge = Bridge(BRIDGE1)
+        bridge.add_internal_port(PATCH1, patch_state=patch_state)
+        with bridge.create() as state:
+            assertlib.assert_state_match(state)
+
+        assertlib.assert_absent(BRIDGE1)
+        assertlib.assert_absent(PATCH1)
+
+    def test_add_patch_to_existing_interface(self):
+        patch_state = {OVSInterface.Patch.PEER: "192.0.2.1"}
+        bridge = Bridge(BRIDGE1)
+        bridge.add_internal_port(PATCH1)
+        with bridge.create() as state:
+            assertlib.assert_state_match(state)
+            state[Interface.KEY][1][OVSInterface.CONFIG_SUBTREE] = patch_state
+            libnmstate.apply(state)
+            assertlib.assert_state_match(state)
+
+        assertlib.assert_absent(BRIDGE1)
+        assertlib.assert_absent(PATCH1)
