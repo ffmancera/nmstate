@@ -125,13 +125,6 @@ class RouteEntry(StateEntry):
                 f"Route {self.to_dict()} next hop to down/absent interface"
             )
             return False
-        if iface.is_dynamic(
-            Interface.IPV6 if self.is_ipv6 else Interface.IPV4
-        ):
-            self._invalid_reason = (
-                f"Route {self.to_dict()} next hop to interface with dynamic IP"
-            )
-            return False
         if self.is_ipv6:
             if not iface.is_ipv6_enabled():
                 self._invalid_reason = (
