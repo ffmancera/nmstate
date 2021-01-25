@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2020 Red Hat, Inc.
+# Copyright (c) 2018-2021 Red Hat, Inc.
 #
 # This file is part of nmstate
 #
@@ -17,6 +17,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 
+import os
 import time
 
 import pytest
@@ -986,3 +987,26 @@ def test_ignore_verification_error_on_invalid_bond_option(eth1_up, eth2_up):
                 Bond.OPTIONS_SUBTREE
             ]
         )
+
+
+@pytest.mark.skipif(
+    not os.environ.get("LAST_KERNEL") == "true",
+    reason="xmit hash policy vlan+srcmac is only supported in upstream kernel",
+)
+def test_set_xmit_hash_policy_to_vlan_srcmac(eth1_up, eth2_up):
+    port = [
+        eth1_up[Interface.KEY][0][Interface.NAME],
+        eth2_up[Interface.KEY][0][Interface.NAME],
+    ]
+    extra_iface_state = {
+        Bond.CONFIG_SUBTREE: {
+            Bond.MODE: BondMode.XOR,
+            Bond.OPTIONS_SUBTREE: {
+                "xmit_hash_policy": "vlan+srcmac",
+            },
+        }
+    }
+    with bond_interface(
+        BOND99, port, extra_iface_state=extra_iface_state
+    ) as state:
+        assertlib.assert_state_match(state)
