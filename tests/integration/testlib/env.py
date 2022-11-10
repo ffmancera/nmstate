@@ -18,6 +18,7 @@
 #
 
 import os
+from .cmdlib import exec_cmd
 
 import gi
 
@@ -42,3 +43,7 @@ def nm_major_minor_version():
 
 def is_k8s():
     return os.getenv("RUN_K8S") == "true"
+
+
+def is_el8():
+    return exec_cmd("rpm -E %{?rhel}".split())[1].strip() == "8"
