@@ -1,0 +1,12 @@
+---
+interfaces:
+  - name: bond0
+    type: bond
+    state: up
+    link-aggregation:
+      mode: active-backup
+      options:
+        miimon: 100
+      port:
+        - eth1
+        - eth2

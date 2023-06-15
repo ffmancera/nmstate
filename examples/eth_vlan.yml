@@ -1,0 +1,10 @@
+---
+interfaces:
+  - name: eth1.100
+    type: vlan
+    state: up
+    ipv4:
+      enabled: true
+      address:
+        - ip: 192.0.2.30
+          prefix-length: 24
